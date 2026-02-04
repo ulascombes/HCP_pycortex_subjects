@@ -61,7 +61,7 @@ formats = ['32k', '59k']
 HCP_subject = '100610'
 
 for n, format_ in enumerate(formats):
-    subject = 'sub-hcp_{}'.format(format_)
+    subject = 'sub-hcp{}'.format(format_)
     
     # Set pycortex db and colormaps
     set_pycortex_config_file(cortex_dir)
