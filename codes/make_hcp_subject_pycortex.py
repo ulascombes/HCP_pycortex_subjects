@@ -14,13 +14,13 @@ Output(s):
 -----------------------------------------------------------------------------------------
 To run:
 1. cd to function
->> cd ~/projects/HCP_pycortex_subjects/codes
+>> cd ~/disks/meso_H/projects/HCP_pycortex_subjects/codes
 2. run python command
 python make_hcp_subject_pycortex.py [main directory] [pycortex directory]
 -----------------------------------------------------------------------------------------
 Executions:
-cd ~/projects/HCP_pycortex_subjects/codes
-python make_hcp_subject_pycortex.py /scratch/ulascombes/data/hcp_data /home/ulascombes/projects/HCP_pycortex_subjects/data
+cd ~/disks/meso_H/projects/HCP_pycortex_subjects/codes
+python make_hcp_subject_pycortex.py /Users/uriel/disks/meso_S/data/hcp_data /Users/uriel/disks/meso_H/projects/HCP_pycortex_subjects/data
 -----------------------------------------------------------------------------------------
 Written by Uriel Lascombes (uriel.lascombes@laposte.net)
 -----------------------------------------------------------------------------------------
