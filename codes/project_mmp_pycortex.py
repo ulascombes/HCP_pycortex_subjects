@@ -35,6 +35,7 @@ import ipdb
 deb = ipdb.set_trace
 
 # Import
+import os
 import sys
 import shutil
 import numpy as np
@@ -60,7 +61,6 @@ for n, format_ in enumerate(formats):
     # Load mmp dlabel
     mmp_dlabel_fn = '{}/atlas/HCP_MMP1.Glasser.{}_fs_LR.dlabel.nii'.format(main_dir, format_)
     mmp_label_partial_data = nb.load(mmp_dlabel_fn).get_fdata().squeeze()
-    
     
     # Load mask 
     mask_32k_fn = '{}/cortex/db/{}/surface-info/cortex_mask.npz'.format(main_dir, subject)
@@ -102,10 +102,12 @@ for n, format_ in enumerate(formats):
         roi_dict_left[roi_name]  = (mmp_label_full_L_data == roi_num)
         roi_dict_right[roi_name] = (mmp_label_full_R_data == roi_num)
     
-    mmp_label_npz_dir = '{}/atlas'.format(main_dir)
-    np.savez('{}/rois-mmp.npz'.format(mmp_label_npz_dir), **roi_dict_brain)
-    np.savez('{}/hemi-L_rois-mmp.npz'.format(mmp_label_npz_dir), **roi_dict_left)
-    np.savez('{}/hemi-R_rois-mmp.npz'.format(mmp_label_npz_dir), **roi_dict_right)
+    mmp_label_npz_dir = '{}/cortex/db/{}/rois'.format(main_dir, subject)
+    os.makedirs(mmp_label_npz_dir, exist_ok=True)
+    
+    np.savez('{}/{}_rois-mmp.npz'.format(mmp_label_npz_dir, format_), **roi_dict_brain)
+    np.savez('{}/{}_hemi-L_rois-mmp.npz'.format(mmp_label_npz_dir, format_), **roi_dict_left)
+    np.savez('{}/{}_hemi-R_rois-mmp.npz'.format(mmp_label_npz_dir, format_), **roi_dict_right)
     
     # Add the mmp on overlay 
     colormap_name = 'HCP_MMP1'
@@ -135,6 +137,6 @@ for n, format_ in enumerate(formats):
     overlay_group_mmp_fn = '{}/cortex/db/{}/overlays_rois-group-mmp.svg'.format(main_dir, subject)
     shutil.copy(overlay_mmp_fn, overlay_group_mmp_fn)
     
-    rp = ROIpack(subject, '{}/rois-mmp.npz'.format(mmp_label_npz_dir))
+    rp = ROIpack(subject, '{}/{}_rois-mmp.npz'.format(mmp_label_npz_dir, format_))
     rp.to_svg(filename=overlay_group_mmp_fn)
     

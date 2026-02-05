@@ -20,7 +20,7 @@ python make_hcp_subject_pycortex.py [main directory] [pycortex directory]
 -----------------------------------------------------------------------------------------
 Executions:
 cd ~/disks/meso_H/projects/HCP_pycortex_subjects/codes
-python make_hcp_subject_pycortex.py /Users/uriel/disks/meso_S/data/hcp_data /Users/uriel/disks/meso_H/projects/HCP_pycortex_subjects/data
+python make_hcp_subject_pycortex.py /Users/uriel/disks/meso_S/data/hcp_data /Users/uriel/disks/meso_H/projects/HCP_pycortex_subjects/data 
 -----------------------------------------------------------------------------------------
 Written by Uriel Lascombes (uriel.lascombes@laposte.net)
 -----------------------------------------------------------------------------------------
@@ -45,7 +45,10 @@ import nibabel as nb
 
 # Personal imports 
 sys.path.append("{}/utils".format(os.getcwd()))
+from cifti_utils import from_91k_to_32k, from_170k_to_59k, from_32k_to_91k, from_59k_to_170k
+from surface_utils import load_surface ,make_surface_image
 from pycortex_utils import set_pycortex_config_file, setup_pycortex_dirs
+
 
 # Inputs
 hcp_data_dir = sys.argv[1]
@@ -69,8 +72,14 @@ for n, format_ in enumerate(formats):
   
     if '32k' in subject : 
         res = '_'
+        full_brain_format = '91k'
+        mask_func_brain_cortex = from_91k_to_32k
+        mask_func_cortex_brain = from_32k_to_91k
     elif '59k' in subject : 
         res = '_1.6mm_'
+        full_brain_format = '170k'
+        mask_func_brain_cortex = from_170k_to_59k
+        mask_func_cortex_brain = from_59k_to_170k
     
     # Make pycortex subject
     cortex.db.make_subj(subject)
@@ -79,10 +88,7 @@ for n, format_ in enumerate(formats):
     print('coping data ...')
     hcp_T1w_dir = '{}/{}/T1w'.format(hcp_data_dir, HCP_subject)
     hcp_MNINonLinear_dir = '{}/{}/MNINonLinear'.format(hcp_data_dir, HCP_subject)
-    
     hcp_template_dir = '{}/fsaverage_LR{}'.format(hcp_MNINonLinear_dir, format_)
-    
-    
     pycortex_surf_dir = '{}/db/{}/surfaces'.format(cortex_dir, subject)
     pycortex_anat_dir = '{}/db/{}/anatomicals'.format(cortex_dir, subject)
     pycortex_surf_inf_dir = '{}/db/{}/surface-info'.format(cortex_dir, subject)
@@ -146,12 +152,10 @@ for n, format_ in enumerate(formats):
                 '{}/raw_wm.nii.gz'.format(pycortex_anat_dir))
     print('white matter volume inflated is done')
     
-    
     # brainmask
     shutil.copy('{}/brainmask_fs.nii.gz'.format(hcp_T1w_dir), 
                 '{}/brainmask.nii.gz'.format(pycortex_anat_dir))
     print('brainmask volume inflated is done')
-    
         
     # Sulcaldepth
     # Load brain mask 
@@ -195,12 +199,24 @@ for n, format_ in enumerate(formats):
     rand_data = np.random.randn(num_verts)
     vertex_data = cortex.Vertex(rand_data, subject)
     ds = cortex.Dataset(rand=vertex_data)
-    
-    
+      
     temp_dir = "{}/temp_data/{}_rand_ds/".format(pycortex_dir, subject)
     cortex.webgl.make_static(outpath=temp_dir, data=ds, types=('inflated','very_inflated'))
-
+    
+    # Create 91k and 170k masks
+    full_brain_template_fn = '{}/template_space-fsLR_den-{}_bold.dtseries.nii'.format(hcp_data_dir, full_brain_format)
+    full_brain_template_img, full_brain_template_data = load_surface(full_brain_template_fn)
+    
+    results = mask_func_brain_cortex(full_brain_template_img, full_brain_template_data, False, True)
+    cortex_mask = results['mask_{}'.format(format_)].astype(int)
+    
+    brain_mask = mask_func_cortex_brain(cortex_mask.reshape(1,-1), cortex_mask)
     
     
+    cortex_mask_img = make_surface_image(data=brain_mask, 
+                                         source_img=full_brain_template_img, 
+                                         maps_names=None)
     
-    
+    cortex_mask_fn = '{}/cortex/db/{}/masks'.format(pycortex_dir, subject)
+    os.makedirs(cortex_mask_fn, exist_ok=True)
+    nb.save(cortex_mask_img, '{}/{}_to_{}_mask.dtseries.nii'.format(cortex_mask_fn, full_brain_format, format_))
