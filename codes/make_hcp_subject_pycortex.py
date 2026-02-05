@@ -46,7 +46,7 @@ import nibabel as nb
 # Personal imports 
 sys.path.append("{}/utils".format(os.getcwd()))
 from cifti_utils import from_91k_to_32k, from_170k_to_59k, from_32k_to_91k, from_59k_to_170k
-from surface_utils import load_surface ,make_surface_image
+from surface_utils import load_surface
 from pycortex_utils import set_pycortex_config_file, setup_pycortex_dirs
 
 
@@ -210,13 +210,10 @@ for n, format_ in enumerate(formats):
     results = mask_func_brain_cortex(full_brain_template_img, full_brain_template_data, False, True)
     cortex_mask = results['mask_{}'.format(format_)].astype(int)
     
-    brain_mask = mask_func_cortex_brain(cortex_mask.reshape(1,-1), cortex_mask)
-    
-    
-    cortex_mask_img = make_surface_image(data=brain_mask, 
-                                         source_img=full_brain_template_img, 
-                                         maps_names=None)
+    brain_mask = mask_func_cortex_brain(cortex_mask.reshape(1, -1), cortex_mask)
+    brain_mask_dict = {'brain_mask': brain_mask.astype(bool).squeeze()}
     
     cortex_mask_fn = '{}/cortex/db/{}/masks'.format(pycortex_dir, subject)
     os.makedirs(cortex_mask_fn, exist_ok=True)
-    nb.save(cortex_mask_img, '{}/{}_to_{}_mask.dtseries.nii'.format(cortex_mask_fn, full_brain_format, format_))
+    
+    np.savez('{}/{}_cortex_mask.npz'.format(cortex_mask_fn, full_brain_format), **brain_mask_dict)    
