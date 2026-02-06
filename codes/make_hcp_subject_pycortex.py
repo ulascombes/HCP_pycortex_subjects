@@ -210,7 +210,8 @@ for n, format_ in enumerate(formats):
     results = mask_func_brain_cortex(full_brain_template_img, full_brain_template_data, False, True)
     cortex_mask = results['mask_{}'.format(format_)].astype(int)
     
-    brain_mask = mask_func_cortex_brain(cortex_mask.reshape(1, -1), cortex_mask)
+    brain_mask = mask_func_cortex_brain(np.ones_like(cortex_mask).reshape(1, -1), cortex_mask)
+    brain_mask = np.nan_to_num(brain_mask, nan=0).astype(int)
     brain_mask_dict = {'brain_mask': brain_mask.astype(bool).squeeze()}
     
     cortex_mask_fn = '{}/cortex/db/{}/masks'.format(pycortex_dir, subject)
