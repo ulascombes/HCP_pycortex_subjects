@@ -56,7 +56,11 @@ cortex_dir = "{}/cortex".format(main_dir)
 set_pycortex_config_file(cortex_dir)
 
 for n, format_ in enumerate(formats):
-    subject = 'sub-hcp{}'.format(format_)
+    if '32k' in format_ : 
+        subject = 'sub-hcp2.0mm'
+
+    elif '59k' in format_ :
+        subject = 'sub-hcp1.6mm'
     
     # Load mmp dlabel
     mmp_dlabel_fn = '{}/atlas/HCP_MMP1.Glasser.{}_fs_LR.dlabel.nii'.format(main_dir, format_)

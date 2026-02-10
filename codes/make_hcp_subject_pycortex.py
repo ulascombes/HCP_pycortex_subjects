@@ -64,18 +64,19 @@ formats = ['32k', '59k']
 HCP_subject = '100610'
 
 for n, format_ in enumerate(formats):
-    subject = 'sub-hcp{}'.format(format_)
     
     # Set pycortex db and colormaps
     set_pycortex_config_file(cortex_dir)
     importlib.reload(cortex)
   
-    if '32k' in subject : 
+    if '32k' in format_ : 
+        subject = 'sub-hcp2.0mm'
         res = '_'
         full_brain_format = '91k'
         mask_func_brain_cortex = from_91k_to_32k
         mask_func_cortex_brain = from_32k_to_91k
-    elif '59k' in subject : 
+    elif '59k' in format_ :
+        subject = 'sub-hcp1.6mm'
         res = '_1.6mm_'
         full_brain_format = '170k'
         mask_func_brain_cortex = from_170k_to_59k
