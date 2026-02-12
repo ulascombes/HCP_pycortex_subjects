@@ -209,13 +209,18 @@ for n, format_ in enumerate(formats):
     full_brain_template_img, full_brain_template_data = load_surface(full_brain_template_fn)
     
     results = mask_func_brain_cortex(full_brain_template_img, full_brain_template_data, False, True)
-    cortex_mask = results['mask_{}'.format(format_)].astype(int)
+    cortex_mask = results['mask_{}'.format(format_)]
+    cortex_mask_dict = {'brain_mask': cortex_mask}
     
-    brain_mask = mask_func_cortex_brain(np.ones_like(cortex_mask).reshape(1, -1), cortex_mask)
+    brain_mask = mask_func_cortex_brain(np.ones_like(cortex_mask).astype(int).reshape(1, -1), cortex_mask)
     brain_mask = np.nan_to_num(brain_mask, nan=0).astype(int)
     brain_mask_dict = {'brain_mask': brain_mask.astype(bool).squeeze()}
     
     cortex_mask_fn = '{}/cortex/db/{}/masks'.format(pycortex_dir, subject)
     os.makedirs(cortex_mask_fn, exist_ok=True)
     
+    np.savez('{}/{}_cortex_mask.npz'.format(cortex_mask_fn, format_), **cortex_mask_dict)    
+    np.savez('{}/{}_cortex_mask.npz'.format(cortex_mask_fn, format_), **cortex_mask_dict)  
+    
+    np.savez('{}/{}_cortex_mask.npz'.format(cortex_mask_fn, full_brain_format), **brain_mask_dict)    
     np.savez('{}/{}_cortex_mask.npz'.format(cortex_mask_fn, full_brain_format), **brain_mask_dict)    
