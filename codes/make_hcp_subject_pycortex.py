@@ -82,18 +82,22 @@ for n, format_ in enumerate(formats):
         mask_func_brain_cortex = from_170k_to_59k
         mask_func_cortex_brain = from_59k_to_170k
     
-    # Make pycortex subject
-    cortex.db.make_subj(subject)
 
-    # Copy relevant data
-    print('coping data ...')
+
+    # Directories
     hcp_T1w_dir = '{}/{}/T1w'.format(hcp_data_dir, HCP_subject)
     hcp_MNINonLinear_dir = '{}/{}/MNINonLinear'.format(hcp_data_dir, HCP_subject)
     hcp_template_dir = '{}/fsaverage_LR{}'.format(hcp_MNINonLinear_dir, format_)
-    pycortex_surf_dir = '{}/db/{}/surfaces'.format(cortex_dir, subject)
-    pycortex_anat_dir = '{}/db/{}/anatomicals'.format(cortex_dir, subject)
-    pycortex_surf_inf_dir = '{}/db/{}/surface-info'.format(cortex_dir, subject)
+    pycortex_subject_dir = '{}/db/{}'.format(cortex_dir, subject)
+    pycortex_surf_dir = '{}/surfaces'.format(pycortex_subject_dir)
+    pycortex_anat_dir = '{}/anatomicals'.format(pycortex_subject_dir)
+    pycortex_surf_inf_dir = '{}/surface-info'.format(pycortex_subject_dir)
     
+    # Make pycortex subject
+    cortex.db.make_subj(subject)
+   
+    # Copy relevant data    
+    print('coping data ...')
     # wm (white matter)
     shutil.copy('{}/{}.L.white{}MSMAll.{}_fs_LR.surf.gii'.format(
         hcp_template_dir, HCP_subject, res, format_),
@@ -216,7 +220,7 @@ for n, format_ in enumerate(formats):
     brain_mask = np.nan_to_num(brain_mask, nan=0).astype(int)
     brain_mask_dict = {'brain_mask': brain_mask.astype(bool).squeeze()}
     
-    cortex_mask_fn = '{}/cortex/db/{}/masks'.format(pycortex_dir, subject)
+    cortex_mask_fn = '{}/masks'.format(pycortex_subject_dir)
     os.makedirs(cortex_mask_fn, exist_ok=True)
     
     np.savez('{}/{}_cortex_mask.npz'.format(cortex_mask_fn, format_), **cortex_mask_dict)    
@@ -224,3 +228,20 @@ for n, format_ in enumerate(formats):
     
     np.savez('{}/{}_cortex_mask.npz'.format(cortex_mask_fn, full_brain_format), **brain_mask_dict)    
     np.savez('{}/{}_cortex_mask.npz'.format(cortex_mask_fn, full_brain_format), **brain_mask_dict)    
+    
+    # add .gitkeep in empty folders 
+    for root, dirs, files in os.walk(pycortex_subject_dir):
+        # Ignore hidden system files if needed
+        visible_files = [f for f in files if not f.startswith('.')]
+        visible_dirs = [d for d in dirs if not d.startswith('.')]
+        
+        # If directory is empty (no files and no subdirectories)
+        if not visible_files and not visible_dirs:
+            gitkeep_path = os.path.join(root, '.gitkeep')
+            
+            # Create .gitkeep only if it doesn't already exist
+            if not os.path.exists(gitkeep_path):
+                with open(gitkeep_path, 'w') as f:
+                    pass  # empty file
+                
+                print(f'Added .gitkeep in {root}')
