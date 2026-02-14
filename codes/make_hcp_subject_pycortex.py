@@ -98,6 +98,7 @@ for n, format_ in enumerate(formats):
    
     # Copy relevant data    
     print('coping data ...')
+    
     # wm (white matter)
     shutil.copy('{}/{}.L.white{}MSMAll.{}_fs_LR.surf.gii'.format(
         hcp_template_dir, HCP_subject, res, format_),

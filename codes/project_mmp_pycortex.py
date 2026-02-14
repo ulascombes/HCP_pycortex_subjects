@@ -110,8 +110,8 @@ for n, format_ in enumerate(formats):
     os.makedirs(mmp_label_npz_dir, exist_ok=True)
     
     np.savez('{}/{}_{}_rois-mmp.npz'.format(mmp_label_npz_dir, subject, format_), **roi_dict_brain)
-    np.savez('{}/{}_{}_hemi-L_rois-mmp.npz'.format(mmp_label_npz_dir, subject, format_), **roi_dict_left)
-    np.savez('{}/{}_{}_hemi-R_rois-mmp.npz'.format(mmp_label_npz_dir, subject, format_), **roi_dict_right)
+    np.savez('{}/{}_hemi-L_{}_rois-mmp.npz'.format(mmp_label_npz_dir, subject, format_), **roi_dict_left)
+    np.savez('{}/{}_hemi-R_{}_rois-mmp.npz'.format(mmp_label_npz_dir, subject, format_), **roi_dict_right)
     
     # Add the mmp on overlay 
     colormap_name = 'HCP_MMP1'
